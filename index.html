@@ -55,7 +55,7 @@
   <div id="statistics">
     <p><strong>Joystick Statistics</strong></p>
     <p>Direction: <span id="direction">Center</span></p>
-    <p>Distance: <span id="distance">0</span></p>
+    <p>Distance: <span id="distance">0</span>%</p>
     <p>Angle: <span id="angle">0</span>°</p>
   </div>
 
@@ -68,6 +68,7 @@
 
     let containerRect, centerX, centerY, maxDistance;
 
+    // Initialize joystick dimensions
     function init() {
       containerRect = container.getBoundingClientRect();
       centerX = containerRect.left + containerRect.width / 2;
@@ -92,6 +93,7 @@
       const dx = touch.clientX - centerX;
       const dy = touch.clientY - centerY;
 
+      // Calculate distance and clamp within maxDistance
       const distance = Math.min(Math.sqrt(dx * dx + dy * dy), maxDistance);
       const angle = Math.atan2(dy, dx) * (180 / Math.PI); // Convert radians to degrees
       const direction = calculateDirection(angle);
@@ -110,16 +112,21 @@
     }
 
     function handleTouchEnd() {
+      // Reset joystick to center
       joystick.style.left = '50%';
       joystick.style.top = '50%';
+
+      // Reset statistics
       directionEl.textContent = 'Center';
       distanceEl.textContent = '0';
       angleEl.textContent = '0';
     }
 
+    // Initialize joystick on load and resize
     init();
     window.addEventListener('resize', init);
 
+    // Add touch event listeners
     joystick.addEventListener('touchmove', handleTouchMove);
     joystick.addEventListener('touchend', handleTouchEnd);
   </script>
