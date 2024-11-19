@@ -3,15 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Web Joystick</title>
+  <title>Joystick with Statistics</title>
   <style>
     body {
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
+      justify-content: center;
       height: 100vh;
       margin: 0;
       background: #f0f0f0;
+      font-family: Arial, sans-serif;
     }
 
     #joystick-container {
@@ -21,6 +23,7 @@
       background: #ccc;
       border: 2px solid #999;
       border-radius: 50%;
+      margin-bottom: 20px;
     }
 
     #joystick {
@@ -34,47 +37,91 @@
       transform: translate(-50%, -50%);
       touch-action: none;
     }
+
+    #statistics {
+      text-align: center;
+      font-size: 16px;
+    }
+
+    #statistics p {
+      margin: 5px 0;
+    }
   </style>
 </head>
 <body>
   <div id="joystick-container">
     <div id="joystick"></div>
   </div>
+  <div id="statistics">
+    <p><strong>Joystick Statistics</strong></p>
+    <p>Direction: <span id="direction">Center</span></p>
+    <p>Distance: <span id="distance">0</span></p>
+    <p>Angle: <span id="angle">0</span>°</p>
+  </div>
+
   <script>
     const joystick = document.getElementById('joystick');
     const container = document.getElementById('joystick-container');
+    const directionEl = document.getElementById('direction');
+    const distanceEl = document.getElementById('distance');
+    const angleEl = document.getElementById('angle');
 
-    let containerRect, maxDistance;
+    let containerRect, centerX, centerY, maxDistance;
 
-    // Initialize center coordinates and max distance
     function init() {
       containerRect = container.getBoundingClientRect();
+      centerX = containerRect.left + containerRect.width / 2;
+      centerY = containerRect.top + containerRect.height / 2;
       maxDistance = containerRect.width / 2 - joystick.offsetWidth / 2;
+    }
+
+    function calculateDirection(angle) {
+      if (angle >= -22.5 && angle < 22.5) return 'Right';
+      if (angle >= 22.5 && angle < 67.5) return 'Up-Right';
+      if (angle >= 67.5 && angle < 112.5) return 'Up';
+      if (angle >= 112.5 && angle < 157.5) return 'Up-Left';
+      if (angle >= 157.5 || angle < -157.5) return 'Left';
+      if (angle >= -157.5 && angle < -112.5) return 'Down-Left';
+      if (angle >= -112.5 && angle < -67.5) return 'Down';
+      if (angle >= -67.5 && angle < -22.5) return 'Down-Right';
+      return 'Center';
     }
 
     function handleTouchMove(event) {
       const touch = event.touches[0];
-      const dx = touch.clientX - (containerRect.left + containerRect.width / 2);
-      const dy = touch.clientY - (containerRect.top + containerRect.height / 2);
+      const dx = touch.clientX - centerX;
+      const dy = touch.clientY - centerY;
+
       const distance = Math.min(Math.sqrt(dx * dx + dy * dy), maxDistance);
+      const angle = Math.atan2(dy, dx) * (180 / Math.PI); // Convert radians to degrees
+      const direction = calculateDirection(angle);
 
-      const angle = Math.atan2(dy, dx);
-      const x = Math.cos(angle) * distance;
-      const y = Math.sin(angle) * distance;
+      const x = (dx / Math.sqrt(dx * dx + dy * dy)) * distance;
+      const y = (dy / Math.sqrt(dx * dx + dy * dy)) * distance;
 
+      // Update joystick position
       joystick.style.left = `${50 + (x / maxDistance) * 50}%`;
       joystick.style.top = `${50 + (y / maxDistance) * 50}%`;
+
+      // Update statistics
+      directionEl.textContent = direction;
+      distanceEl.textContent = Math.round((distance / maxDistance) * 100);
+      angleEl.textContent = Math.round(angle);
     }
 
     function handleTouchEnd() {
       joystick.style.left = '50%';
       joystick.style.top = '50%';
+      directionEl.textContent = 'Center';
+      distanceEl.textContent = '0';
+      angleEl.textContent = '0';
     }
 
     init();
+    window.addEventListener('resize', init);
+
     joystick.addEventListener('touchmove', handleTouchMove);
     joystick.addEventListener('touchend', handleTouchEnd);
-    window.addEventListener('resize', init);
   </script>
 </body>
 </html>
