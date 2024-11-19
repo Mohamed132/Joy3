@@ -14,6 +14,8 @@
       margin: 0;
       background: #f0f0f0;
       font-family: Arial, sans-serif;
+      overflow: hidden; /* Prevent scrolling */
+      touch-action: none; /* Disable touch-based scrolling */
     }
 
     #joystick-container {
@@ -35,7 +37,7 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      touch-action: none;
+      touch-action: none; /* Ensure the joystick works without triggering scrolling */
     }
 
     #statistics {
