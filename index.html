@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Joystick with Statistics</title>
+  <title>Joystick with Free Activation</title>
   <style>
     body {
       display: flex;
@@ -26,6 +26,7 @@
       border: 2px solid #999;
       border-radius: 50%;
       margin-bottom: 20px;
+      touch-action: none;
     }
 
     #joystick {
@@ -37,7 +38,8 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      touch-action: none; /* Ensure the joystick works without triggering scrolling */
+      touch-action: none;
+      display: none; /* Initially hidden */
     }
 
     #statistics {
@@ -68,13 +70,11 @@
     const distanceEl = document.getElementById('distance');
     const angleEl = document.getElementById('angle');
 
-    let containerRect, centerX, centerY, maxDistance;
+    let containerRect, startX, startY, maxDistance;
 
     // Initialize joystick dimensions
     function init() {
       containerRect = container.getBoundingClientRect();
-      centerX = containerRect.left + containerRect.width / 2;
-      centerY = containerRect.top + containerRect.height / 2;
       maxDistance = containerRect.width / 2 - joystick.offsetWidth / 2;
     }
 
@@ -90,10 +90,21 @@
       return 'Center';
     }
 
+    function handleTouchStart(event) {
+      const touch = event.touches[0];
+      startX = touch.clientX;
+      startY = touch.clientY;
+
+      // Show joystick at touch point
+      joystick.style.left = `${touch.clientX - containerRect.left}px`;
+      joystick.style.top = `${touch.clientY - containerRect.top}px`;
+      joystick.style.display = 'block';
+    }
+
     function handleTouchMove(event) {
       const touch = event.touches[0];
-      const dx = touch.clientX - centerX;
-      const dy = touch.clientY - centerY;
+      const dx = touch.clientX - startX;
+      const dy = touch.clientY - startY;
 
       // Calculate distance and clamp within maxDistance
       const distance = Math.min(Math.sqrt(dx * dx + dy * dy), maxDistance);
@@ -104,8 +115,7 @@
       const y = (dy / Math.sqrt(dx * dx + dy * dy)) * distance;
 
       // Update joystick position
-      joystick.style.left = `${50 + (x / maxDistance) * 50}%`;
-      joystick.style.top = `${50 + (y / maxDistance) * 50}%`;
+      joystick.style.transform = `translate(${x}px, ${y}px)`;
 
       // Update statistics
       directionEl.textContent = direction;
@@ -114,9 +124,9 @@
     }
 
     function handleTouchEnd() {
-      // Reset joystick to center
-      joystick.style.left = '50%';
-      joystick.style.top = '50%';
+      // Reset joystick to hidden
+      joystick.style.display = 'none';
+      joystick.style.transform = 'translate(-50%, -50%)';
 
       // Reset statistics
       directionEl.textContent = 'Center';
@@ -129,8 +139,9 @@
     window.addEventListener('resize', init);
 
     // Add touch event listeners
-    joystick.addEventListener('touchmove', handleTouchMove);
-    joystick.addEventListener('touchend', handleTouchEnd);
+    container.addEventListener('touchstart', handleTouchStart);
+    container.addEventListener('touchmove', handleTouchMove);
+    container.addEventListener('touchend', handleTouchEnd);
   </script>
 </body>
 </html>
